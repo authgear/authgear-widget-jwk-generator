@@ -86,8 +86,12 @@ export async function pemToJwk(pem: string, options: JWKOptions = {}): Promise<J
     if (use) {
       jwk.use = use;
     }
+    // Handle key_ops - remove if none selected, add if operations are selected
     if (key_ops && key_ops.length > 0) {
       jwk.key_ops = key_ops;
+    } else {
+      // Remove key_ops if it was automatically added by jose library
+      delete jwk.key_ops;
     }
     
     return jwk;
@@ -257,4 +261,123 @@ export function detectAlgorithm(jwk: JsonWebKey) {
     return 'EdDSA';
   }
   return null;
+}
+
+// Validate JWK structure and required fields
+export function validateJWK(jwk: any): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (!jwk || typeof jwk !== 'object') {
+    errors.push('JWK must be a valid JSON object');
+    return { isValid: false, errors };
+  }
+  
+  // Check required fields
+  if (!jwk.kty) {
+    errors.push('Missing required field: kty (key type)');
+  }
+  
+  if (!jwk.kid) {
+    errors.push('Missing required field: kid (key ID)');
+  }
+  
+  // Validate key type specific fields
+  if (jwk.kty === 'RSA') {
+    if (!jwk.n) errors.push('RSA key missing required field: n (modulus)');
+    if (!jwk.e) errors.push('RSA key missing required field: e (exponent)');
+  } else if (jwk.kty === 'EC') {
+    if (!jwk.crv) errors.push('EC key missing required field: crv (curve)');
+    if (!jwk.x) errors.push('EC key missing required field: x (x coordinate)');
+    if (!jwk.y) errors.push('EC key missing required field: y (y coordinate)');
+  } else if (jwk.kty === 'OKP') {
+    if (!jwk.crv) errors.push('OKP key missing required field: crv (curve)');
+    if (!jwk.x) errors.push('OKP key missing required field: x (public key)');
+  } else {
+    errors.push(`Unsupported key type: ${jwk.kty}`);
+  }
+  
+  return { isValid: errors.length === 0, errors };
+}
+
+// Convert JWK to PEM
+export async function jwkToPem(jwk: JsonWebKey): Promise<string> {
+  try {
+    debug('Converting JWK to PEM:', jwk);
+    
+    // Validate JWK first
+    const validation = validateJWK(jwk);
+    if (!validation.isValid) {
+      throw new Error(`Invalid JWK: ${validation.errors.join(', ')}`);
+    }
+    
+    let key: CryptoKey;
+    let keyType: 'public' | 'private';
+    
+    // Determine if this is a public or private key
+    if (jwk.kty === 'RSA') {
+      keyType = jwk.d ? 'private' : 'public';
+    } else if (jwk.kty === 'EC') {
+      keyType = jwk.d ? 'private' : 'public';
+    } else if (jwk.kty === 'OKP') {
+      keyType = jwk.d ? 'private' : 'public';
+    } else {
+      throw new Error(`Unsupported key type: ${jwk.kty}`);
+    }
+    
+    // Import the JWK
+    if (keyType === 'public') {
+      key = await crypto.subtle.importKey(
+        'jwk',
+        jwk,
+        getAlgorithmFromJWK(jwk),
+        true,
+        ['verify']
+      );
+    } else {
+      key = await crypto.subtle.importKey(
+        'jwk',
+        jwk,
+        getAlgorithmFromJWK(jwk),
+        true,
+        ['sign']
+      );
+    }
+    
+    // Export as PEM
+    const format = keyType === 'public' ? 'spki' : 'pkcs8';
+    const exported = await crypto.subtle.exportKey(format, key);
+    
+    // Convert to base64 and format as PEM
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(exported)));
+    const pemHeader = keyType === 'public' ? '-----BEGIN PUBLIC KEY-----' : '-----BEGIN PRIVATE KEY-----';
+    const pemFooter = keyType === 'public' ? '-----END PUBLIC KEY-----' : '-----END PRIVATE KEY-----';
+    
+    // Format with line breaks every 64 characters
+    const formatted = base64.match(/.{1,64}/g)?.join('\n') || base64;
+    
+    return `${pemHeader}\n${formatted}\n${pemFooter}`;
+  } catch (error) {
+    console.error('JWK to PEM conversion error:', error);
+    throw new Error('Failed to convert JWK to PEM: ' + (error instanceof Error ? error.message : 'Unknown error'));
+  }
+}
+
+// Helper function to get algorithm object from JWK
+function getAlgorithmFromJWK(jwk: JsonWebKey) {
+  if (jwk.kty === 'RSA') {
+    return {
+      name: 'RSASSA-PKCS1-v1_5',
+      hash: { name: 'SHA-256' }
+    };
+  } else if (jwk.kty === 'EC') {
+    return {
+      name: 'ECDSA',
+      namedCurve: jwk.crv || 'P-256'
+    };
+  } else if (jwk.kty === 'OKP') {
+    return {
+      name: 'Ed25519'
+    };
+  }
+  throw new Error(`Unsupported key type: ${jwk.kty}`);
 } 
