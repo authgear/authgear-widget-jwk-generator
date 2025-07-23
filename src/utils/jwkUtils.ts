@@ -1,5 +1,12 @@
 import * as jose from 'jose';
 
+// Debug utility that only logs in development mode
+const debug = (...args: any[]) => {
+  if (import.meta.env.DEV) {
+    console.log(...args);
+  }
+};
+
 interface JWKOptions {
   keyId?: string;
   alg?: string;
@@ -49,25 +56,25 @@ export async function pemToJwk(pem: string, options: JWKOptions = {}): Promise<J
     const { keyId, alg, use, key_ops } = options;
     const keyType = detectKeyType(pem);
     
-    console.log('Converting PEM to JWK:', { keyType, alg, use });
+    debug('Converting PEM to JWK:', { keyType, alg, use });
     
     let jwk: JsonWebKey & { kid?: string; alg?: string; use?: string };
     
     if (keyType === 'certificate') {
-      console.log('Processing certificate...');
+      debug('Processing certificate...');
       const key = await jose.importX509(pem, alg || 'RS256');
       jwk = await jose.exportJWK(key);
     } else if (keyType === 'public') {
-      console.log('Processing public key...');
+      debug('Processing public key...');
       jwk = await convertPublicKeyToJwk(pem, alg);
     } else if (keyType === 'private' || keyType === 'rsa-private' || keyType === 'ec-private') {
-      console.log('Processing private key...');
+      debug('Processing private key...');
       jwk = await convertPrivateKeyToJwk(pem, alg);
     } else {
       throw new Error('Unsupported key type. Please ensure the PEM format is correct.');
     }
     
-    console.log('Generated JWK:', jwk);
+    debug('Generated JWK:', jwk);
     
     // Add optional fields
     if (keyId) {
@@ -92,7 +99,7 @@ export async function pemToJwk(pem: string, options: JWKOptions = {}): Promise<J
 
 // Convert public key to JWK - using raw Web Crypto API to ensure extractable keys
 async function convertPublicKeyToJwk(pem: string, specifiedAlg?: string) {
-  console.log('convertPublicKeyToJwk called with alg:', specifiedAlg);
+  debug('convertPublicKeyToJwk called with alg:', specifiedAlg);
   
   // Clean the PEM
   const cleanPem = pem.replace(/-----BEGIN.*-----|-----END.*-----/g, '').replace(/\s/g, '');
@@ -101,7 +108,7 @@ async function convertPublicKeyToJwk(pem: string, specifiedAlg?: string) {
   // Try the specified algorithm first
   if (specifiedAlg) {
     try {
-      console.log(`Trying specified algorithm: ${specifiedAlg}`);
+      debug(`Trying specified algorithm: ${specifiedAlg}`);
       const key = await crypto.subtle.importKey(
         'spki',
         keyBuffer,
@@ -110,10 +117,10 @@ async function convertPublicKeyToJwk(pem: string, specifiedAlg?: string) {
         ['verify']
       );
       const jwk = await crypto.subtle.exportKey('jwk', key);
-      console.log(`Success with ${specifiedAlg}:`, jwk);
+      debug(`Success with ${specifiedAlg}:`, jwk);
       return jwk;
     } catch (e) {
-      console.log(`Failed with specified algorithm ${specifiedAlg}:`, e instanceof Error ? e.message : 'Unknown error');
+      debug(`Failed with specified algorithm ${specifiedAlg}:`, e instanceof Error ? e.message : 'Unknown error');
     }
   }
   
@@ -122,7 +129,7 @@ async function convertPublicKeyToJwk(pem: string, specifiedAlg?: string) {
   
   for (const algorithm of algorithms) {
     try {
-      console.log(`Trying algorithm: ${algorithm}`);
+      debug(`Trying algorithm: ${algorithm}`);
       const key = await crypto.subtle.importKey(
         'spki',
         keyBuffer,
@@ -131,10 +138,10 @@ async function convertPublicKeyToJwk(pem: string, specifiedAlg?: string) {
         ['verify']
       );
       const jwk = await crypto.subtle.exportKey('jwk', key);
-      console.log(`Success with ${algorithm}:`, jwk);
+      debug(`Success with ${algorithm}:`, jwk);
       return jwk;
     } catch (e) {
-      console.log(`Failed with ${algorithm}:`, e instanceof Error ? e.message : 'Unknown error');
+      debug(`Failed with ${algorithm}:`, e instanceof Error ? e.message : 'Unknown error');
       continue;
     }
   }
@@ -144,7 +151,7 @@ async function convertPublicKeyToJwk(pem: string, specifiedAlg?: string) {
 
 // Convert private key to JWK - using raw Web Crypto API to ensure extractable keys
 async function convertPrivateKeyToJwk(pem: string, specifiedAlg?: string) {
-  console.log('convertPrivateKeyToJwk called with alg:', specifiedAlg);
+  debug('convertPrivateKeyToJwk called with alg:', specifiedAlg);
   
   // Clean the PEM
   const cleanPem = pem.replace(/-----BEGIN.*-----|-----END.*-----/g, '').replace(/\s/g, '');
@@ -153,7 +160,7 @@ async function convertPrivateKeyToJwk(pem: string, specifiedAlg?: string) {
   // Try the specified algorithm first
   if (specifiedAlg) {
     try {
-      console.log(`Trying specified algorithm: ${specifiedAlg}`);
+      debug(`Trying specified algorithm: ${specifiedAlg}`);
       const key = await crypto.subtle.importKey(
         'pkcs8',
         keyBuffer,
@@ -162,10 +169,10 @@ async function convertPrivateKeyToJwk(pem: string, specifiedAlg?: string) {
         ['sign']
       );
       const jwk = await crypto.subtle.exportKey('jwk', key);
-      console.log(`Success with ${specifiedAlg}:`, jwk);
+      debug(`Success with ${specifiedAlg}:`, jwk);
       return jwk;
     } catch (e) {
-      console.log(`Failed with specified algorithm ${specifiedAlg}:`, e instanceof Error ? e.message : 'Unknown error');
+      debug(`Failed with specified algorithm ${specifiedAlg}:`, e instanceof Error ? e.message : 'Unknown error');
     }
   }
   
@@ -174,7 +181,7 @@ async function convertPrivateKeyToJwk(pem: string, specifiedAlg?: string) {
   
   for (const algorithm of algorithms) {
     try {
-      console.log(`Trying algorithm: ${algorithm}`);
+      debug(`Trying algorithm: ${algorithm}`);
       const key = await crypto.subtle.importKey(
         'pkcs8',
         keyBuffer,
@@ -183,10 +190,10 @@ async function convertPrivateKeyToJwk(pem: string, specifiedAlg?: string) {
         ['sign']
       );
       const jwk = await crypto.subtle.exportKey('jwk', key);
-      console.log(`Success with ${algorithm}:`, jwk);
+      debug(`Success with ${algorithm}:`, jwk);
       return jwk;
     } catch (e) {
-      console.log(`Failed with ${algorithm}:`, e instanceof Error ? e.message : 'Unknown error');
+      debug(`Failed with ${algorithm}:`, e instanceof Error ? e.message : 'Unknown error');
       continue;
     }
   }
