@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import Prism from "prismjs";
+import "prismjs/components/prism-json";
+import "prismjs/themes/prism.css";
 
 // Types
 interface KeyAlgorithm {
@@ -522,22 +525,38 @@ const KeyOperationsSection: React.FC<{
 };
 
 const ResultsSection: React.FC<{
-  generatedJWK: string;
   generatedPublicKey: string;
   generatedPrivateKey: string;
-}> = ({ generatedJWK, generatedPublicKey, generatedPrivateKey }) => (
+  highlightedJWK: string;
+  jwkPreRef: React.RefObject<HTMLPreElement>;
+}> = ({ 
+  generatedPublicKey, 
+  generatedPrivateKey,
+  highlightedJWK, 
+  jwkPreRef
+}) => (
   <div style={{ marginTop: 24 }}>
     <div style={{ marginBottom: 20 }}>
       <label style={styles.label}>JWK (JSON Web Key)</label>
-      <pre style={styles.output}>{generatedJWK}</pre>
+      <pre 
+        ref={jwkPreRef}
+        style={styles.output}
+        dangerouslySetInnerHTML={{
+          __html: highlightedJWK || '<span style="color: #6c757d; font-style: italic;">No JWK generated yet</span>'
+        }}
+      />
     </div>
     <div style={{ marginBottom: 20 }}>
       <label style={styles.label}>PKIX Public Key (PEM)</label>
-      <pre style={{ ...styles.output, minHeight: "80px" }}>{generatedPublicKey}</pre>
+      <pre style={{ ...styles.output, minHeight: "80px" }}>
+        {generatedPublicKey || <span style={{ color: "#6c757d", fontStyle: "italic" }}>No public key generated yet</span>}
+      </pre>
     </div>
     <div style={{ marginBottom: 20 }}>
       <label style={styles.label}>PKCS #8 Private Key (PEM)</label>
-      <pre style={styles.output}>{generatedPrivateKey}</pre>
+      <pre style={styles.output}>
+        {generatedPrivateKey || <span style={{ color: "#6c757d", fontStyle: "italic" }}>No private key generated yet</span>}
+      </pre>
     </div>
   </div>
 );
@@ -556,6 +575,8 @@ const GenerateNewKey: React.FC = () => {
   const [generatedPrivateKey, setGeneratedPrivateKey] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [highlightedJWK, setHighlightedJWK] = useState<string>("");
+  const jwkPreRef = useRef<HTMLPreElement>(null);
 
   // Update algorithm when key type or curve changes
   useEffect(() => {
@@ -588,6 +609,22 @@ const GenerateNewKey: React.FC = () => {
       setKeyOperations(prev => prev.filter(op => ["deriveKey", "deriveBits"].includes(op)));
     }
   }, [keyType]);
+
+  // Handle syntax highlighting for JWK
+  useEffect(() => {
+    if (generatedJWK) {
+      const jsonGrammar = Prism.languages['json'];
+      if (jsonGrammar) {
+        setHighlightedJWK(Prism.highlight(generatedJWK, jsonGrammar, "json"));
+      } else {
+        setHighlightedJWK(generatedJWK);
+      }
+    } else {
+      setHighlightedJWK("");
+    }
+  }, [generatedJWK]);
+
+
 
   const handleGenerate = async () => {
     setIsLoading(true);
@@ -696,9 +733,10 @@ const GenerateNewKey: React.FC = () => {
 
       {(generatedJWK || generatedPublicKey || generatedPrivateKey) && (
         <ResultsSection
-          generatedJWK={generatedJWK}
           generatedPublicKey={generatedPublicKey}
           generatedPrivateKey={generatedPrivateKey}
+          highlightedJWK={highlightedJWK}
+          jwkPreRef={jwkPreRef}
         />
       )}
     </div>
