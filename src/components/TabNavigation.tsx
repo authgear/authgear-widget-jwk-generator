@@ -1,6 +1,6 @@
 import React from "react";
 
-type TabType = "pem-to-jwk" | "jwk-to-pem";
+type TabType = "pem-to-jwk" | "jwk-to-pem" | "generate-new-key";
 
 interface TabNavigationProps {
   activeTab: TabType;
@@ -55,6 +55,26 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
         onClick={() => setActiveTab("jwk-to-pem")}
       >
         JWK to PEM
+      </button>
+      <button
+        className={"tab-btn" + (activeTab === "generate-new-key" ? " active" : "")}
+        style={{
+          padding: "12px 24px",
+          border: "none",
+          borderBottom: activeTab === "generate-new-key" ? "2px solid rgb(11, 99, 233)" : "2px solid transparent",
+          background: "none",
+          fontWeight: 600,
+          color: activeTab === "generate-new-key" ? "rgb(11, 99, 233)" : "#495057",
+          cursor: "pointer",
+          outline: "none",
+          fontSize: 16,
+          fontFamily: 'Inter, sans-serif',
+          marginRight: 0,
+          minWidth: "auto"
+        }}
+        onClick={() => setActiveTab("generate-new-key")}
+      >
+        Generate new key
       </button>
     </div>
   );

@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import TabNavigation from "./TabNavigation";
 import PEMToJWK from "./PEMToJWK";
 import JWKToPEM from "./JWKToPEM";
+import GenerateNewKey from "./GenerateNewKey";
 
-type TabType = "pem-to-jwk" | "jwk-to-pem";
+type TabType = "pem-to-jwk" | "jwk-to-pem" | "generate-new-key";
 
 const JWKWidget: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("pem-to-jwk");
@@ -21,6 +22,7 @@ const JWKWidget: React.FC = () => {
       <div style={{ marginTop: 24 }}>
         {activeTab === "pem-to-jwk" && <PEMToJWK />}
         {activeTab === "jwk-to-pem" && <JWKToPEM />}
+        {activeTab === "generate-new-key" && <GenerateNewKey />}
       </div>
     </div>
   );
