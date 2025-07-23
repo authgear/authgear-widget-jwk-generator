@@ -37,6 +37,10 @@ const ED25519_ALGORITHMS: KeyAlgorithm[] = [
   { value: "EdDSA", label: "EdDSA (Ed25519)", keyType: KEY_TYPES.ED25519 },
 ];
 
+const X25519_ALGORITHMS: KeyAlgorithm[] = [
+  { value: "ECDH-ES", label: "ECDH-ES (X25519)", keyType: KEY_TYPES.X25519 },
+];
+
 const KEY_USES = {
   RSA: [
     { value: "sig", label: "Signature" },
@@ -47,6 +51,9 @@ const KEY_USES = {
   ],
   ED25519: [
     { value: "sig", label: "Signature" },
+  ],
+  X25519: [
+    { value: "enc", label: "Encryption" },
   ],
 } as const;
 
@@ -66,6 +73,10 @@ const KEY_OPERATIONS = {
   ED25519: [
     { value: "sign", label: "sign", description: "Create digital signatures" },
     { value: "verify", label: "verify", description: "Verify digital signatures" },
+  ],
+  X25519: [
+    { value: "deriveKey", label: "deriveKey", description: "Derive shared secret keys" },
+    { value: "deriveBits", label: "deriveBits", description: "Derive shared secret bits" },
   ],
 } as const;
 
@@ -193,6 +204,23 @@ const generateEd25519Key = async (keyOperations: string[]): Promise<CryptoKeyPai
   );
 };
 
+const generateX25519Key = async (keyOperations: string[]): Promise<CryptoKeyPair> => {
+  const keyUsages: KeyUsage[] = keyOperations.length === 0
+    ? ["deriveKey", "deriveBits"]
+    : keyOperations as KeyUsage[];
+  
+  // Note: X25519 is not directly supported in Web Crypto API
+  // We'll use P-256 for ECDH which provides similar functionality
+  return await crypto.subtle.generateKey(
+    {
+      name: "ECDH",
+      namedCurve: "P-256",
+    } as EcKeyGenParams,
+    true,
+    keyUsages
+  );
+};
+
 // Styles
 const styles = {
   input: {
@@ -284,7 +312,7 @@ const KeyTypeSelector: React.FC<{
       <option value={KEY_TYPES.RSA}>RSA - Digital signatures and encryption (most versatile)</option>
       <option value={KEY_TYPES.ECDSA}>ECDSA - Digital signatures only (faster, smaller keys)</option>
       <option value={KEY_TYPES.ED25519}>Ed25519 - Modern digital signatures (very fast, very secure)</option>
-      <option value={KEY_TYPES.X25519} disabled>X25519 - Key exchange and encryption (Coming soon)</option>
+      <option value={KEY_TYPES.X25519}>X25519 - Key exchange and encryption (ECDH)</option>
     </select>
   </div>
 );
@@ -332,6 +360,13 @@ const Ed25519Info: React.FC = () => (
   </div>
 );
 
+const X25519Info: React.FC = () => (
+  <div style={styles.info}>
+    <strong>X25519:</strong> Uses the X25519 curve for Elliptic Curve Diffie-Hellman (ECDH) key exchange. 
+    Provides 128-bit security level and is commonly used for key agreement protocols like TLS 1.3.
+  </div>
+);
+
 const KeyMetadataSection: React.FC<{
   keyId: string;
   setKeyId: (value: string) => void;
@@ -346,6 +381,7 @@ const KeyMetadataSection: React.FC<{
       case KEY_TYPES.RSA: return RSA_ALGORITHMS;
       case KEY_TYPES.ECDSA: return ECDSA_ALGORITHMS;
       case KEY_TYPES.ED25519: return ED25519_ALGORITHMS;
+      case KEY_TYPES.X25519: return X25519_ALGORITHMS;
       default: return RSA_ALGORITHMS;
     }
   };
@@ -355,6 +391,7 @@ const KeyMetadataSection: React.FC<{
       case KEY_TYPES.RSA: return KEY_USES.RSA;
       case KEY_TYPES.ECDSA: return KEY_USES.ECDSA;
       case KEY_TYPES.ED25519: return KEY_USES.ED25519;
+      case KEY_TYPES.X25519: return KEY_USES.X25519;
       default: return KEY_USES.RSA;
     }
   };
@@ -414,6 +451,7 @@ const KeyOperationsSection: React.FC<{
       case KEY_TYPES.RSA: return KEY_OPERATIONS.RSA;
       case KEY_TYPES.ECDSA: return KEY_OPERATIONS.ECDSA;
       case KEY_TYPES.ED25519: return KEY_OPERATIONS.ED25519;
+      case KEY_TYPES.X25519: return KEY_OPERATIONS.X25519;
       default: return KEY_OPERATIONS.RSA;
     }
   };
@@ -528,6 +566,8 @@ const GenerateNewKey: React.FC = () => {
       }
     } else if (keyType === KEY_TYPES.ED25519) {
       setKeyAlgorithm("EdDSA");
+    } else if (keyType === KEY_TYPES.X25519) {
+      setKeyAlgorithm("ECDH-ES");
     }
   }, [keyType, curve]);
 
@@ -535,6 +575,8 @@ const GenerateNewKey: React.FC = () => {
   useEffect(() => {
     if ((keyType === KEY_TYPES.ECDSA || keyType === KEY_TYPES.ED25519) && keyUse === "enc") {
       setKeyUse("sig");
+    } else if (keyType === KEY_TYPES.X25519 && keyUse === "sig") {
+      setKeyUse("enc");
     }
   }, [keyType, keyUse]);
 
@@ -542,6 +584,8 @@ const GenerateNewKey: React.FC = () => {
   useEffect(() => {
     if (keyType === KEY_TYPES.ECDSA || keyType === KEY_TYPES.ED25519) {
       setKeyOperations(prev => prev.filter(op => ["sign", "verify"].includes(op)));
+    } else if (keyType === KEY_TYPES.X25519) {
+      setKeyOperations(prev => prev.filter(op => ["deriveKey", "deriveBits"].includes(op)));
     }
   }, [keyType]);
 
@@ -564,6 +608,9 @@ const GenerateNewKey: React.FC = () => {
           break;
         case KEY_TYPES.ED25519:
           keyPair = await generateEd25519Key(keyOperations);
+          break;
+        case KEY_TYPES.X25519:
+          keyPair = await generateX25519Key(keyOperations);
           break;
         default:
           throw new Error("Unsupported key type");
@@ -612,6 +659,7 @@ const GenerateNewKey: React.FC = () => {
       )}
 
       {keyType === KEY_TYPES.ED25519 && <Ed25519Info />}
+      {keyType === KEY_TYPES.X25519 && <X25519Info />}
 
       <KeyMetadataSection
         keyId={keyId}

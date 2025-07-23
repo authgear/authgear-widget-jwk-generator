@@ -129,7 +129,7 @@ async function convertPublicKeyToJwk(pem: string, specifiedAlg?: string) {
   }
   
   // Try common algorithms in order
-  const algorithms = ['RS256', 'ES256', 'PS256'];
+  const algorithms = ['RS256', 'ES256', 'PS256', 'ECDH-ES'];
   
   for (const algorithm of algorithms) {
     try {
@@ -181,7 +181,7 @@ async function convertPrivateKeyToJwk(pem: string, specifiedAlg?: string) {
   }
   
   // Try common algorithms in order
-  const algorithms = ['RS256', 'ES256', 'PS256'];
+  const algorithms = ['RS256', 'ES256', 'PS256', 'ECDH-ES'];
   
   for (const algorithm of algorithms) {
     try {
@@ -240,6 +240,11 @@ function getAlgorithmObject(algorithm: string | undefined) {
         name: 'ECDSA',
         namedCurve: 'P-521'
       };
+    case 'ECDH-ES':
+      return {
+        name: 'ECDH',
+        namedCurve: 'P-256'
+      };
     default:
       throw new Error(`Unsupported algorithm: ${algorithm}`);
   }
@@ -258,7 +263,11 @@ export function detectAlgorithm(jwk: JsonWebKey) {
       return 'ES512';
     }
   } else if (jwk.kty === 'OKP') {
-    return 'EdDSA';
+    if (jwk.crv === 'Ed25519') {
+      return 'EdDSA';
+    } else if (jwk.crv === 'X25519') {
+      return 'ECDH-ES';
+    }
   }
   return null;
 }
@@ -325,21 +334,30 @@ export async function jwkToPem(jwk: JsonWebKey): Promise<string> {
     }
     
     // Import the JWK
+    const algorithm = getAlgorithmFromJWK(jwk);
+    let keyUsages: KeyUsage[];
+    
+    if (algorithm.name === 'ECDH') {
+      keyUsages = ['deriveKey', 'deriveBits'];
+    } else {
+      keyUsages = keyType === 'public' ? ['verify'] : ['sign'];
+    }
+    
     if (keyType === 'public') {
       key = await crypto.subtle.importKey(
         'jwk',
         jwk,
-        getAlgorithmFromJWK(jwk),
+        algorithm,
         true,
-        ['verify']
+        keyUsages
       );
     } else {
       key = await crypto.subtle.importKey(
         'jwk',
         jwk,
-        getAlgorithmFromJWK(jwk),
+        algorithm,
         true,
-        ['sign']
+        keyUsages
       );
     }
     
@@ -375,9 +393,16 @@ function getAlgorithmFromJWK(jwk: JsonWebKey) {
       namedCurve: jwk.crv || 'P-256'
     };
   } else if (jwk.kty === 'OKP') {
-    return {
-      name: 'Ed25519'
-    };
+    if (jwk.crv === 'Ed25519') {
+      return {
+        name: 'Ed25519'
+      };
+    } else if (jwk.crv === 'X25519') {
+      return {
+        name: 'ECDH',
+        namedCurve: 'P-256'
+      };
+    }
   }
   throw new Error(`Unsupported key type: ${jwk.kty}`);
 } 

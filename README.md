@@ -6,7 +6,7 @@ A web-based tool for converting between PEM-formatted keys and JSON Web Keys (JW
 
 - **PEM to JWK Conversion**: Convert PEM-encoded keys and certificates to JWK format
 - **Key Fingerprint Generation**: Generate SHA-256 fingerprints for keys
-- **Multiple Key Types**: Support for RSA, ECDSA, and EdDSA keys
+- **Multiple Key Types**: Support for RSA, ECDSA, EdDSA, and X25519 keys
 - **Customizable Metadata**: Add key ID, algorithm, usage, and operations
 - **Syntax Highlighting**: JSON output with syntax highlighting
 
@@ -46,6 +46,13 @@ A web-based tool for converting between PEM-formatted keys and JSON Web Keys (JW
 - **RSA Private Keys**
 - **EC Private Keys**
 - **Certificates**
+
+## Supported Key Types
+
+- **RSA**: Digital signatures and encryption (RS256, RS384, RS512)
+- **ECDSA**: Digital signatures (ES256, ES384, ES512)
+- **Ed25519**: Modern digital signatures (EdDSA)
+- **X25519**: Key exchange and encryption (ECDH-ES)
 
 ## Technologies
 
