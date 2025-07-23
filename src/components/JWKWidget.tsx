@@ -20,9 +20,15 @@ const JWKWidget: React.FC = () => {
     }}>
       <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
       <div style={{ marginTop: 24 }}>
-        {activeTab === "pem-to-jwk" && <PEMToJWK />}
-        {activeTab === "jwk-to-pem" && <JWKToPEM />}
-        {activeTab === "generate-new-key" && <GenerateNewKey />}
+        <div style={{ display: activeTab === "pem-to-jwk" ? "block" : "none" }}>
+          <PEMToJWK />
+        </div>
+        <div style={{ display: activeTab === "jwk-to-pem" ? "block" : "none" }}>
+          <JWKToPEM />
+        </div>
+        <div style={{ display: activeTab === "generate-new-key" ? "block" : "none" }}>
+          <GenerateNewKey />
+        </div>
       </div>
     </div>
   );

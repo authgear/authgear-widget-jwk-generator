@@ -525,39 +525,124 @@ const KeyOperationsSection: React.FC<{
 };
 
 const ResultsSection: React.FC<{
+  generatedJWK: string;
   generatedPublicKey: string;
   generatedPrivateKey: string;
   highlightedJWK: string;
   jwkPreRef: React.RefObject<HTMLPreElement>;
+  onCopyJWK: () => Promise<void>;
+  onCopyPublicKey: () => Promise<void>;
+  onCopyPrivateKey: () => Promise<void>;
+  copySuccess: { jwk: boolean; publicKey: boolean; privateKey: boolean };
 }> = ({ 
+  generatedJWK,
   generatedPublicKey, 
   generatedPrivateKey,
   highlightedJWK, 
-  jwkPreRef
+  jwkPreRef,
+  onCopyJWK,
+  onCopyPublicKey,
+  onCopyPrivateKey,
+  copySuccess
 }) => (
   <div style={{ marginTop: 24 }}>
     <div style={{ marginBottom: 20 }}>
       <label style={styles.label}>JWK (JSON Web Key)</label>
-      <pre 
-        ref={jwkPreRef}
-        style={styles.output}
-        dangerouslySetInnerHTML={{
-          __html: highlightedJWK || '<span style="color: #6c757d; font-style: italic;">No JWK generated yet</span>'
-        }}
-      />
+      <div style={{ position: "relative" }}>
+        <pre 
+          ref={jwkPreRef}
+          style={styles.output}
+          dangerouslySetInnerHTML={{
+            __html: highlightedJWK || '<span style="color: #6c757d; font-style: italic;">No JWK generated yet</span>'
+          }}
+        />
+        {generatedJWK && (
+          <button
+            onClick={onCopyJWK}
+            style={{
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              background: copySuccess.jwk ? "#28a745" : "#6c757d",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              padding: "4px 8px",
+              fontSize: "12px",
+              fontWeight: 500,
+              cursor: "pointer",
+              fontFamily: "Inter, sans-serif",
+              transition: "background-color 0.2s",
+              zIndex: 10
+            }}
+          >
+            {copySuccess.jwk ? "COPIED!" : "COPY"}
+          </button>
+        )}
+      </div>
     </div>
-    <div style={{ marginBottom: 20 }}>
-      <label style={styles.label}>PKIX Public Key (PEM)</label>
-      <pre style={{ ...styles.output, minHeight: "80px" }}>
-        {generatedPublicKey || <span style={{ color: "#6c757d", fontStyle: "italic" }}>No public key generated yet</span>}
-      </pre>
-    </div>
-    <div style={{ marginBottom: 20 }}>
-      <label style={styles.label}>PKCS #8 Private Key (PEM)</label>
-      <pre style={styles.output}>
-        {generatedPrivateKey || <span style={{ color: "#6c757d", fontStyle: "italic" }}>No private key generated yet</span>}
-      </pre>
-    </div>
+          <div style={{ marginBottom: 20 }}>
+        <label style={styles.label}>PKIX Public Key (PEM)</label>
+        <div style={{ position: "relative" }}>
+          <pre style={{ ...styles.output, minHeight: "80px" }}>
+            {generatedPublicKey || <span style={{ color: "#6c757d", fontStyle: "italic" }}>No public key generated yet</span>}
+          </pre>
+          {generatedPublicKey && (
+            <button
+              onClick={onCopyPublicKey}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: copySuccess.publicKey ? "#28a745" : "#6c757d",
+                color: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                padding: "4px 8px",
+                fontSize: "12px",
+                fontWeight: 500,
+                cursor: "pointer",
+                fontFamily: "Inter, sans-serif",
+                transition: "background-color 0.2s",
+                zIndex: 10
+              }}
+            >
+              {copySuccess.publicKey ? "COPIED!" : "COPY"}
+            </button>
+          )}
+        </div>
+      </div>
+      <div style={{ marginBottom: 20 }}>
+        <label style={styles.label}>PKCS #8 Private Key (PEM)</label>
+        <div style={{ position: "relative" }}>
+          <pre style={styles.output}>
+            {generatedPrivateKey || <span style={{ color: "#6c757d", fontStyle: "italic" }}>No private key generated yet</span>}
+          </pre>
+          {generatedPrivateKey && (
+            <button
+              onClick={onCopyPrivateKey}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: copySuccess.privateKey ? "#28a745" : "#6c757d",
+                color: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                padding: "4px 8px",
+                fontSize: "12px",
+                fontWeight: 500,
+                cursor: "pointer",
+                fontFamily: "Inter, sans-serif",
+                transition: "background-color 0.2s",
+                zIndex: 10
+              }}
+            >
+              {copySuccess.privateKey ? "COPIED!" : "COPY"}
+            </button>
+          )}
+        </div>
+      </div>
   </div>
 );
 
@@ -576,6 +661,11 @@ const GenerateNewKey: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [highlightedJWK, setHighlightedJWK] = useState<string>("");
+  const [copySuccess, setCopySuccess] = useState<{ jwk: boolean; publicKey: boolean; privateKey: boolean }>({
+    jwk: false,
+    publicKey: false,
+    privateKey: false
+  });
   const jwkPreRef = useRef<HTMLPreElement>(null);
 
   // Update algorithm when key type or curve changes
@@ -683,6 +773,42 @@ const GenerateNewKey: React.FC = () => {
     }
   };
 
+  const handleCopyJWK = async (): Promise<void> => {
+    if (generatedJWK) {
+      try {
+        await navigator.clipboard.writeText(generatedJWK);
+        setCopySuccess(prev => ({ ...prev, jwk: true }));
+        setTimeout(() => setCopySuccess(prev => ({ ...prev, jwk: false })), 2000);
+      } catch (err) {
+        console.error("Failed to copy JWK to clipboard:", err);
+      }
+    }
+  };
+
+  const handleCopyPublicKey = async (): Promise<void> => {
+    if (generatedPublicKey) {
+      try {
+        await navigator.clipboard.writeText(generatedPublicKey);
+        setCopySuccess(prev => ({ ...prev, publicKey: true }));
+        setTimeout(() => setCopySuccess(prev => ({ ...prev, publicKey: false })), 2000);
+      } catch (err) {
+        console.error("Failed to copy public key to clipboard:", err);
+      }
+    }
+  };
+
+  const handleCopyPrivateKey = async (): Promise<void> => {
+    if (generatedPrivateKey) {
+      try {
+        await navigator.clipboard.writeText(generatedPrivateKey);
+        setCopySuccess(prev => ({ ...prev, privateKey: true }));
+        setTimeout(() => setCopySuccess(prev => ({ ...prev, privateKey: false })), 2000);
+      } catch (err) {
+        console.error("Failed to copy private key to clipboard:", err);
+      }
+    }
+  };
+
   return (
     <div style={{ fontFamily: "Inter, sans-serif", color: "#495057" }}>
       <KeyTypeSelector value={keyType} onChange={setKeyType} />
@@ -733,10 +859,15 @@ const GenerateNewKey: React.FC = () => {
 
       {(generatedJWK || generatedPublicKey || generatedPrivateKey) && (
         <ResultsSection
+          generatedJWK={generatedJWK}
           generatedPublicKey={generatedPublicKey}
           generatedPrivateKey={generatedPrivateKey}
           highlightedJWK={highlightedJWK}
           jwkPreRef={jwkPreRef}
+          onCopyJWK={handleCopyJWK}
+          onCopyPublicKey={handleCopyPublicKey}
+          onCopyPrivateKey={handleCopyPrivateKey}
+          copySuccess={copySuccess}
         />
       )}
     </div>

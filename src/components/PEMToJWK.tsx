@@ -63,6 +63,7 @@ const PEMToJWK: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [highlighted, setHighlighted] = useState<string>("");
+  const [copySuccess, setCopySuccess] = useState<boolean>(false);
   const preRef = useRef<HTMLPreElement>(null);
 
   useEffect(() => {
@@ -133,6 +134,19 @@ const PEMToJWK: React.FC = () => {
       setJwk(null);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCopyToClipboard = async (): Promise<void> => {
+    if (jwk) {
+      try {
+        const jsonString = JSON.stringify(jwk, null, 2);
+        await navigator.clipboard.writeText(jsonString);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (err) {
+        console.error("Failed to copy to clipboard:", err);
+      }
     }
   };
 
@@ -311,29 +325,54 @@ const PEMToJWK: React.FC = () => {
       {/* JWK Output - Always visible like in the reference */}
       <div style={{ marginTop: 24 }}>
         <label style={commonLabelStyle}>JWK (JSON Web Key)</label>
-        <pre
-          ref={preRef}
-          style={{
-            background: "#f8f9fa",
-            padding: 16,
-            borderRadius: 4,
-            fontSize: 14,
-            marginTop: 6,
-            border: "1px solid #e9ecef",
-            fontFamily: "monospace",
-            lineHeight: 1.5,
-            color: "#495057",
-            minHeight: "120px",
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-all",
-            textAlign: "left",
-            overflow: "auto"
-          }}
-          dangerouslySetInnerHTML={{
-            __html: highlighted ||
-              '<span style="color: #6c757d; font-style: italic;">Enter a PEM key and click "Generate JWK" to see the output</span>'
-          }}
-        />
+        <div style={{ position: "relative" }}>
+          <pre
+            ref={preRef}
+            style={{
+              background: "#f8f9fa",
+              padding: 16,
+              borderRadius: 4,
+              fontSize: 14,
+              marginTop: 6,
+              border: "1px solid #e9ecef",
+              fontFamily: "monospace",
+              lineHeight: 1.5,
+              color: "#495057",
+              minHeight: "120px",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-all",
+              textAlign: "left",
+              overflow: "auto"
+            }}
+            dangerouslySetInnerHTML={{
+              __html: highlighted ||
+                '<span style="color: #6c757d; font-style: italic;">Enter a PEM key and click "Generate JWK" to see the output</span>'
+            }}
+          />
+          {jwk && (
+            <button
+              onClick={handleCopyToClipboard}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: copySuccess ? "#28a745" : "#6c757d",
+                color: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                padding: "4px 8px",
+                fontSize: "12px",
+                fontWeight: 500,
+                cursor: "pointer",
+                fontFamily: "Inter, sans-serif",
+                transition: "background-color 0.2s",
+                zIndex: 10
+              }}
+            >
+              {copySuccess ? "COPIED!" : "COPY"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

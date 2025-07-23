@@ -10,6 +10,7 @@ const JWKToPEM: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [highlighted, setHighlighted] = useState<string>("");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [copySuccess, setCopySuccess] = useState<boolean>(false);
   const preRef = useRef<HTMLPreElement>(null);
 
   useEffect(() => {
@@ -58,6 +59,18 @@ const JWKToPEM: React.FC = () => {
       setPem("");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCopyToClipboard = async (): Promise<void> => {
+    if (pem) {
+      try {
+        await navigator.clipboard.writeText(pem);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (err) {
+        console.error("Failed to copy to clipboard:", err);
+      }
     }
   };
 
@@ -169,31 +182,56 @@ const JWKToPEM: React.FC = () => {
       {/* PEM Output */}
       <div style={{ marginTop: 24 }}>
         <label style={commonLabelStyle}>PEM Output</label>
-        <pre
-          ref={preRef}
-          style={{
-            background: "#f8f9fa",
-            padding: 16,
-            borderRadius: 4,
-            fontSize: 14,
-            marginTop: 6,
-            border: "1px solid #e9ecef",
-            fontFamily: "monospace",
-            lineHeight: 1.5,
-            color: "#495057",
-            minHeight: "120px",
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-all",
-            textAlign: "left",
-            overflow: "auto"
-          }}
-        >
-          {highlighted || (
-            <span style={{ color: "#6c757d", fontStyle: "italic" }}>
-              Enter a JWK and click "Convert to PEM" to see the output
-            </span>
+        <div style={{ position: "relative" }}>
+          <pre
+            ref={preRef}
+            style={{
+              background: "#f8f9fa",
+              padding: 16,
+              borderRadius: 4,
+              fontSize: 14,
+              marginTop: 6,
+              border: "1px solid #e9ecef",
+              fontFamily: "monospace",
+              lineHeight: 1.5,
+              color: "#495057",
+              minHeight: "120px",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-all",
+              textAlign: "left",
+              overflow: "auto"
+            }}
+          >
+            {highlighted || (
+              <span style={{ color: "#6c757d", fontStyle: "italic" }}>
+                Enter a JWK and click "Convert to PEM" to see the output
+              </span>
+            )}
+          </pre>
+          {pem && (
+            <button
+              onClick={handleCopyToClipboard}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: copySuccess ? "#28a745" : "#6c757d",
+                color: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                padding: "4px 8px",
+                fontSize: "12px",
+                fontWeight: 500,
+                cursor: "pointer",
+                fontFamily: "Inter, sans-serif",
+                transition: "background-color 0.2s",
+                zIndex: 10
+              }}
+            >
+              {copySuccess ? "COPIED!" : "COPY"}
+            </button>
           )}
-        </pre>
+        </div>
       </div>
 
       {/* Help Section */}
