@@ -14,11 +14,7 @@ interface KeyUse {
   label: string;
 }
 
-interface KeyOperation {
-  value: string;
-  label: string;
-  description: string;
-}
+
 
 type JWKResult = JsonWebKey;
 
@@ -42,23 +38,14 @@ const KEY_USES: KeyUse[] = [
   { value: "enc", label: "Encryption" },
 ];
 
-const KEY_OPERATIONS: KeyOperation[] = [
-  { value: "sign", label: "sign", description: "Create digital signatures" },
-  { value: "verify", label: "verify", description: "Verify digital signatures" },
-  { value: "encrypt", label: "encrypt", description: "Encrypt data" },
-  { value: "decrypt", label: "decrypt", description: "Decrypt data" },
-  { value: "wrapKey", label: "wrapKey", description: "Wrap (encrypt) other keys" },
-  { value: "unwrapKey", label: "unwrapKey", description: "Unwrap (decrypt) other keys" },
-  { value: "deriveKey", label: "deriveKey", description: "Derive new keys" },
-  { value: "deriveBits", label: "deriveBits", description: "Derive bits for key derivation" },
-];
+
 
 const PEMToJWK: React.FC = () => {
   const [pem, setPem] = useState<string>("");
   const [keyId, setKeyId] = useState<string>("");
   const [alg, setAlg] = useState<string>("");
   const [use, setUse] = useState<string>("");
-  const [keyOps, setKeyOps] = useState<string[]>([]);
+
   const [jwk, setJwk] = useState<JWKResult | null>(null);
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -80,13 +67,7 @@ const PEMToJWK: React.FC = () => {
     }
   }, [jwk]);
 
-  const handleKeyOpChange = (operation: string, checked: boolean): void => {
-    if (checked) {
-      setKeyOps(prev => [...prev, operation]);
-    } else {
-      setKeyOps(prev => prev.filter(op => op !== operation));
-    }
-  };
+
 
   const handleGenerate = async (): Promise<void> => {
     if (!pem.trim()) {
@@ -122,9 +103,7 @@ const PEMToJWK: React.FC = () => {
       if (use.trim()) {
         options.use = use.trim();
       }
-      if (keyOps.length > 0) {
-        options.key_ops = keyOps;
-      }
+
       const result = await pemToJwk(pem, options);
 
       setJwk(result);
@@ -234,60 +213,7 @@ const PEMToJWK: React.FC = () => {
           </select>
         </div>
       </div>
-      {/* Key Operations Section */}
-      <div style={{ marginBottom: 20 }}>
-        <label style={commonLabelStyle}>Key Operations (key_ops) - Optional</label>
-        <div style={{ 
-          display: "grid", 
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", 
-          gap: 12,
-          padding: "12px",
-          border: "1px solid #e9ecef",
-          borderRadius: "4px",
-          backgroundColor: "#f8f9fa"
-        }}>
-          {KEY_OPERATIONS.map(op => (
-            <label 
-              key={op.value} 
-              style={{ 
-                display: "flex", 
-                alignItems: "center", 
-                gap: 8,
-                padding: "8px",
-                borderRadius: "4px",
-                cursor: "pointer",
-                transition: "background-color 0.2s",
-                backgroundColor: keyOps.includes(op.value) ? "#e3f2fd" : "transparent"
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={keyOps.includes(op.value)}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleKeyOpChange(op.value, e.target.checked)}
-                style={{ 
-                  width: "16px", 
-                  height: "16px",
-                  cursor: "pointer"
-                }}
-              />
-              <div>
-                <div style={{ fontWeight: 500, fontSize: "14px" }}>{op.label}</div>
-                <div style={{ fontSize: "12px", color: "#6c757d" }}>{op.description}</div>
-              </div>
-            </label>
-          ))}
-        </div>
-        {keyOps.length > 0 && (
-          <div style={{ 
-            marginTop: 8, 
-            fontSize: "12px", 
-            color: "#6c757d",
-            fontStyle: "italic"
-          }}>
-            Selected operations: {keyOps.join(', ')}
-          </div>
-        )}
-      </div>
+
       {/* Generate Button */}
       <button
         onClick={handleGenerate}

@@ -86,13 +86,11 @@ export async function pemToJwk(pem: string, options: JWKOptions = {}): Promise<J
     if (use) {
       jwk.use = use;
     }
-    // Handle key_ops - remove if none selected, add if operations are selected
+    // Handle key_ops - only add if explicitly provided, don't override existing ones
     if (key_ops && key_ops.length > 0) {
       jwk.key_ops = key_ops;
-    } else {
-      // Remove key_ops if it was automatically added by jose library
-      delete jwk.key_ops;
     }
+    // Note: We don't delete existing key_ops to preserve original claims
     
     return jwk;
   } catch (error) {
