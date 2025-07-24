@@ -932,7 +932,7 @@ const GenerateNewKey: React.FC = () => {
         setKeyType(KEY_TYPES.RSA);
       }
     } else if (keyUse === "enc") {
-      if (keyType === KEY_TYPES.ECDSA || keyType === KEY_TYPES.ED25519) {
+      if (keyType === KEY_TYPES.ECDSA || keyType === KEY_TYPES.ED25519 || keyType === KEY_TYPES.HMAC) {
         setKeyType(KEY_TYPES.RSA);
       }
     }
