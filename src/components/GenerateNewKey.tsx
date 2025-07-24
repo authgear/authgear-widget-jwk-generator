@@ -66,25 +66,20 @@ const ED25519_ALGORITHMS: KeyAlgorithm[] = [
 const ECDH_ALGORITHMS: KeyAlgorithm[] = [
   { value: "ECDH-ES", label: "ECDH-ES (Elliptic Curve Diffie-Hellman Ephemeral Static)", keyType: KEY_TYPES.X25519, description: "Direct key agreement" },
   { value: "ECDH-ES+A128KW", label: "ECDH-ES+A128KW (ECDH-ES with A128KW wrapping)", keyType: KEY_TYPES.X25519, description: "ECDH-ES using Concat KDF and CEK wrapped with A128KW" },
-  { value: "ECDH-ES+A192KW", label: "ECDH-ES+A192KW (ECDH-ES with A192KW wrapping)", keyType: KEY_TYPES.X25519, description: "ECDH-ES using Concat KDF and CEK wrapped with A192KW" },
   { value: "ECDH-ES+A256KW", label: "ECDH-ES+A256KW (ECDH-ES with A256KW wrapping)", keyType: KEY_TYPES.X25519, description: "ECDH-ES using Concat KDF and CEK wrapped with A256KW" },
   { value: "ECDH-ES+A128GCMKW", label: "ECDH-ES+A128GCMKW (ECDH-ES with A128GCMKW wrapping)", keyType: KEY_TYPES.X25519, description: "ECDH-ES using Concat KDF and CEK wrapped with A128GCMKW" },
-  { value: "ECDH-ES+A192GCMKW", label: "ECDH-ES+A192GCMKW (ECDH-ES with A192GCMKW wrapping)", keyType: KEY_TYPES.X25519, description: "ECDH-ES using Concat KDF and CEK wrapped with A192GCMKW" },
   { value: "ECDH-ES+A256GCMKW", label: "ECDH-ES+A256GCMKW (ECDH-ES with A256GCMKW wrapping)", keyType: KEY_TYPES.X25519, description: "ECDH-ES using Concat KDF and CEK wrapped with A256GCMKW" },
 ];
 
 const AES_KEY_WRAP_ALGORITHMS: KeyAlgorithm[] = [
   { value: "A128KW", label: "A128KW (AES Key Wrap with 128-bit key)", keyType: KEY_TYPES.AES, description: "AES Key Wrap with 128-bit key" },
-  { value: "A192KW", label: "A192KW (AES Key Wrap with 192-bit key)", keyType: KEY_TYPES.AES, description: "AES Key Wrap with 192-bit key" },
   { value: "A256KW", label: "A256KW (AES Key Wrap with 256-bit key)", keyType: KEY_TYPES.AES, description: "AES Key Wrap with 256-bit key" },
   { value: "A128GCMKW", label: "A128GCMKW (AES GCM Key Wrap with 128-bit key)", keyType: KEY_TYPES.AES, description: "AES GCM Key Wrap with 128-bit key" },
-  { value: "A192GCMKW", label: "A192GCMKW (AES GCM Key Wrap with 192-bit key)", keyType: KEY_TYPES.AES, description: "AES GCM Key Wrap with 192-bit key" },
   { value: "A256GCMKW", label: "A256GCMKW (AES GCM Key Wrap with 256-bit key)", keyType: KEY_TYPES.AES, description: "AES GCM Key Wrap with 256-bit key" },
 ];
 
 const PBES2_ALGORITHMS: KeyAlgorithm[] = [
   { value: "PBES2-HS256+A128KW", label: "PBES2-HS256+A128KW (PBES2 with HMAC SHA-256 and A128KW)", keyType: KEY_TYPES.OCT, description: "PBES2 with HMAC SHA-256 and A128KW wrapping" },
-  { value: "PBES2-HS384+A192KW", label: "PBES2-HS384+A192KW (PBES2 with HMAC SHA-384 and A192KW)", keyType: KEY_TYPES.OCT, description: "PBES2 with HMAC SHA-384 and A192KW wrapping" },
   { value: "PBES2-HS512+A256KW", label: "PBES2-HS512+A256KW (PBES2 with HMAC SHA-512 and A256KW)", keyType: KEY_TYPES.OCT, description: "PBES2 with HMAC SHA-512 and A256KW wrapping" },
 ];
 
@@ -108,9 +103,7 @@ const RSA_KEY_SIZES = [
 
 const AES_KEY_SIZES = [
   { value: 128, label: "128 bits" },
-  { value: 192, label: "192 bits" },
   { value: 256, label: "256 bits (recommended)" },
-  { value: 512, label: "512 bits" },
 ];
 
 // Utility functions
@@ -294,7 +287,7 @@ const generateOctKey = async (
     {
       name: "AES-GCM",
     },
-    false,
+    true, // Changed from false to true to make the key extractable
     keyUsages
   );
 };
@@ -590,6 +583,7 @@ const KeySizeSelector: React.FC<{
           <option key={size.value} value={size.value}>{size.label}</option>
         ))}
       </select>
+
     </div>
   );
 };
@@ -1193,7 +1187,19 @@ const GenerateNewKey: React.FC = () => {
   const handleCopyPublicKey = async (): Promise<void> => {
     if (generatedPublicKey) {
       try {
-        await navigator.clipboard.writeText(generatedPublicKey);
+        // For symmetric keys, strip the label and only copy the actual key data
+        const isSymmetric = keyType === KEY_TYPES.AES || keyType === KEY_TYPES.OCT || keyType === KEY_TYPES.HMAC;
+        let textToCopy = generatedPublicKey;
+        
+        if (isSymmetric) {
+          // Remove label if present
+          const prefix = 'Symmetric Key (Base64):\n';
+          if (generatedPublicKey.startsWith(prefix)) {
+            textToCopy = generatedPublicKey.slice(prefix.length);
+          }
+        }
+        
+        await navigator.clipboard.writeText(textToCopy);
         setCopySuccess(prev => ({ ...prev, publicKey: true }));
         setTimeout(() => setCopySuccess(prev => ({ ...prev, publicKey: false })), 2000);
       } catch (err) {
