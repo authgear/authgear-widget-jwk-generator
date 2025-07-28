@@ -67,4 +67,23 @@ A web-based tool for converting between PEM-formatted keys and JSON Web Keys (JW
 ```bash
 npm run type-check  # Type checking
 npm run preview     # Preview production build
-``` 
+```
+
+## Deployment
+
+This project is automatically deployed to GitHub Pages using GitHub Actions. The deployment workflow:
+
+- Triggers on pushes to the `main` branch and pull requests
+- Builds the project using `npm run build`
+- Deploys to GitHub Pages using the `actions/deploy-pages` action
+- Uses a single job for building and deploying (no artifacts between jobs)
+
+The workflow file is located at `.github/workflows/deploy.yml`.
+
+### Manual Deployment
+
+To deploy manually:
+
+1. Build the project: `npm run build`
+2. The built files will be in the `dist/` directory
+3. Deploy the contents of `dist/` to your web server 
