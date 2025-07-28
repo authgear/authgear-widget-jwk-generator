@@ -185,7 +185,7 @@ const PEMToJWK: React.FC = () => {
             value={keyId}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyId(e.target.value)}
             style={commonInputStyle}
-            placeholder="Leave empty to use fingerprint of PEM as Key ID"
+            placeholder="Leave empty to use SHA256 fingerprint of PEM as Key ID"
           />
         </div>
         <div>

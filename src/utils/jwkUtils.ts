@@ -16,7 +16,7 @@ interface JWKOptions {
 
 type KeyType = 'public' | 'private' | 'rsa-private' | 'certificate' | 'ec-private' | 'unknown';
 
-// Generate fingerprint from PEM (SHA-256 hash of the key)
+// Generate fingerprint from PEM (SHA-256 hash of the key) - SSH-style base64 format
 export async function generateFingerprint(pem: string): Promise<string> {
   try {
     // Remove PEM headers/footers and whitespace
@@ -26,7 +26,8 @@ export async function generateFingerprint(pem: string): Promise<string> {
     // Generate SHA-256 hash
     const hashBuffer = await crypto.subtle.digest('SHA-256', keyBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const fingerprint = hashArray.map(b => b.toString(16).padStart(2, '0')).join(':').toUpperCase();
+    // Convert to base64 format like SSH-keygen SHA256 fingerprint
+    const fingerprint = btoa(String.fromCharCode(...hashArray));
     
     return fingerprint;
   } catch (error) {

@@ -120,8 +120,9 @@ const generateFingerprint = async (publicKey: CryptoKey): Promise<string> => {
   const exported = await crypto.subtle.exportKey("spki", publicKey);
   const hash = await crypto.subtle.digest("SHA-256", exported);
   const hashArray = new Uint8Array(hash);
-  const hashHex = Array.from(hashArray, byte => byte.toString(16).padStart(2, '0')).join('');
-  return hashHex.substring(0, 16);
+  // Convert to base64 format like SSH-keygen SHA256 fingerprint
+  const base64 = btoa(String.fromCharCode(...hashArray));
+  return base64;
 };
 
 const cryptoKeyToJWK = async (
@@ -625,7 +626,7 @@ const KeyIdSelector: React.FC<{
       color: "#6c757d",
       fontStyle: "italic"
     }}>
-      A unique identifier for this key. If left empty, a fingerprint will be generated automatically.
+      A unique identifier for this key. If left empty, a SHA256 fingerprint will be generated automatically.
     </div>
   </div>
 );
@@ -1124,7 +1125,8 @@ const GenerateNewKey: React.FC = () => {
           const keyData = await crypto.subtle.exportKey("raw", keyPair as CryptoKey);
           const hash = await crypto.subtle.digest("SHA-256", keyData);
           const hashArray = new Uint8Array(hash);
-          finalKeyId = Array.from(hashArray, byte => byte.toString(16).padStart(2, '0')).join('').substring(0, 16);
+          // Convert to base64 format like SSH-keygen SHA256 fingerprint
+          finalKeyId = btoa(String.fromCharCode(...hashArray));
         } else {
           finalKeyId = await generateFingerprint((keyPair as CryptoKeyPair).publicKey);
         }
