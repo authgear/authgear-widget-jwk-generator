@@ -5,11 +5,12 @@ const App: React.FC = () => {
   return (
     <div style={{ 
       fontFamily: 'Inter, sans-serif', 
-      minHeight: '100vh', 
-      background: '#fff',
       margin: 0,
       padding: 0,
-      color: '#495057'
+      color: '#495057',
+      width: '100%',
+      height: '100%',
+      background: 'transparent'
     }}>
       <JWKWidget />
     </div>

@@ -9,15 +9,45 @@ interface TabNavigationProps {
 
 const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }) => {
   return (
-    <div style={{ 
-      display: "flex", 
-      borderBottom: "1px solid #eee",
-      fontFamily: 'Inter, sans-serif',
-      justifyContent: "space-between",
-      alignItems: "center",
-      gap: 0,
-      padding: "0 16px"
-    }}>
+    <>
+      <style>
+        {`
+          * {
+            box-sizing: border-box;
+          }
+          
+          @media (max-width: 768px) {
+            .authgear-branding {
+              display: none !important;
+            }
+          }
+          
+          @media (max-width: 768px) {
+            .responsive-grid {
+              grid-template-columns: 1fr !important;
+              gap: 12px !important;
+            }
+          }
+          
+          @media (min-width: 769px) and (max-width: 1024px) {
+            .responsive-grid {
+              grid-template-columns: 1fr 1fr !important;
+              gap: 12px !important;
+            }
+          }
+        `}
+      </style>
+      <div style={{ 
+        display: "flex", 
+        borderBottom: "1px solid #eee",
+        fontFamily: 'Inter, sans-serif',
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: 0,
+        padding: "0 16px",
+        width: "100%",
+        background: "transparent"
+      }}>
       <div style={{ display: "flex", gap: 0 }}>
       <button
         className={"tab-btn" + (activeTab === "pem-to-jwk" ? " active" : "")}
@@ -81,16 +111,19 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
       </button>
       </div>
       
-      {/* Authgear branding */}
-                 <div style={{
-             display: "flex",
-             alignItems: "center",
-             gap: "8px",
-             padding: "0 16px",
-             fontSize: "12px",
-             color: "#6c757d",
-             fontWeight: 500
-           }}>
+                 {/* Authgear branding */}
+           <div 
+             className="authgear-branding"
+             style={{
+               display: "flex",
+               alignItems: "center",
+               gap: "8px",
+               padding: "0 16px",
+               fontSize: "12px",
+               color: "#6c757d",
+               fontWeight: 500
+             }}
+           >
         <span>Presented by</span>
         <img 
           src="./authgear-logo.svg" 
@@ -102,6 +135,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
         />
       </div>
     </div>
+    </>
   );
 };
 

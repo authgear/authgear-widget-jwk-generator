@@ -1235,7 +1235,7 @@ const GenerateNewKey: React.FC = () => {
   };
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "#495057", padding: "16px" }}>
+    <div style={{ fontFamily: "Inter, sans-serif", color: "#495057", padding: "16px", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden" }}>
       <KeyUseSelector value={keyUse} onChange={setKeyUse} />
       
       <KeyTypeSelector value={keyType} onChange={setKeyType} keyUse={keyUse} />

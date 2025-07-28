@@ -11,20 +11,25 @@ const JWKWidget: React.FC = () => {
 
   return (
     <div className="jwk-widget" style={{ 
-      maxWidth: 1200, 
-      margin: "0 auto", 
-      background: "#fff", 
-      padding: 0 
+      width: "100%",
+      height: "100%",
+      margin: 0,
+      padding: 0,
+      background: "transparent",
+      display: "flex",
+      flexDirection: "column",
+      boxSizing: "border-box",
+      overflow: "hidden"
     }}>
       <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div style={{ marginTop: 0 }}>
-        <div style={{ display: activeTab === "pem-to-jwk" ? "block" : "none" }}>
+      <div style={{ marginTop: 0, flex: 1, height: "calc(100% - 60px)" }}>
+        <div style={{ display: activeTab === "pem-to-jwk" ? "block" : "none", height: "100%" }}>
           <PEMToJWK />
         </div>
-        <div style={{ display: activeTab === "jwk-to-pem" ? "block" : "none" }}>
+        <div style={{ display: activeTab === "jwk-to-pem" ? "block" : "none", height: "100%" }}>
           <JWKToPEM />
         </div>
-        <div style={{ display: activeTab === "generate-new-key" ? "block" : "none" }}>
+        <div style={{ display: activeTab === "generate-new-key" ? "block" : "none", height: "100%" }}>
           <GenerateNewKey />
         </div>
       </div>

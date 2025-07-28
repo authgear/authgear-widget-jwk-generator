@@ -153,7 +153,7 @@ const PEMToJWK: React.FC = () => {
   };
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "#495057", padding: "16px" }}>
+    <div style={{ fontFamily: "Inter, sans-serif", color: "#495057", padding: "16px", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden" }}>
       {/* PEM Input Section */}
       <div style={{ marginBottom: 16 }}>
         <label style={commonLabelStyle}>PEM encoded key or certificate</label>
@@ -172,12 +172,17 @@ const PEMToJWK: React.FC = () => {
         />
       </div>
       {/* Key Metadata Section */}
-      <div style={{ 
-        display: "grid", 
-        gridTemplateColumns: "1fr 1fr 1fr", 
-        gap: 16, 
-        marginBottom: 16 
-      }}>
+      <div 
+        className="responsive-grid"
+        style={{ 
+          display: "grid", 
+          gridTemplateColumns: "1fr 1fr 1fr", 
+          gap: 16, 
+          marginBottom: 16,
+          width: "100%",
+          boxSizing: "border-box"
+        }}
+      >
         <div>
           <label style={commonLabelStyle}>Key ID (kid)</label>
           <input
