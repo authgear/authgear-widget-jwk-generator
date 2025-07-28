@@ -1,6 +1,10 @@
-# Authgear JWK Generator Widget
+# JWK Generator Widget
 
-A web-based tool for converting between PEM-formatted keys and JSON Web Keys (JWK) format, specifically designed for Authgear integration.
+A web-based tool for converting between PEM-formatted keys and JSON Web Keys (JWK) format. This widget provides three main functionalities:
+
+- **PEM to JWK**: Convert PEM-encoded keys and certificates to JWK format
+- **JWK to PEM**: Convert JWK format back to PEM encoding
+- **Generate New Key**: Create new cryptographic keys in various formats
 
 ## Features
 
