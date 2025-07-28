@@ -45,18 +45,24 @@ A web-based tool for converting between PEM-formatted keys and JSON Web Keys (JW
 
 ## Supported Formats
 
-- **Public Keys**
-- **Private Keys**
-- **RSA Private Keys**
-- **EC Private Keys**
-- **Certificates**
+- **PEM Encoded Keys**: Traditional Privacy-Enhanced Mail format
+  - Public keys (RSA, EC, Ed25519, Ed448, X25519, X448)
+  - Private keys (RSA, EC, Ed25519, Ed448, X25519, X448)
+  - Encrypted private keys (PKCS#8 with password protection)
+- **X.509 Certificates**: Digital certificates in PEM format
+- **JSON Web Keys (JWK)**: RFC 7517 compliant key format
+  - Individual keys
+  - JWK Sets (multiple keys)
+- **Key Generation**: Create new keys in various formats and sizes
 
 ## Supported Key Types
 
-- **RSA**: Digital signatures and encryption (RS256, RS384, RS512)
-- **ECDSA**: Digital signatures (ES256, ES384, ES512)
-- **Ed25519**: Modern digital signatures (EdDSA)
-- **X25519**: Key exchange and encryption (ECDH-ES)
+- **RSA**: Digital signatures and encryption (RS256, RS384, RS512, PS256, PS384, PS512)
+- **ECDSA**: Digital signatures with elliptic curves (ES256, ES384, ES512)
+- **Ed25519**: Modern digital signatures using EdDSA algorithm
+- **Ed448**: High-security digital signatures using EdDSA algorithm
+- **X25519**: Key exchange and encryption using Curve25519
+- **X448**: High-security key exchange using Curve448
 
 ## Technologies
 

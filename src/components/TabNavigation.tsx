@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 type TabType = "pem-to-jwk" | "jwk-to-pem" | "generate-new-key";
 
@@ -8,6 +8,20 @@ interface TabNavigationProps {
 }
 
 const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }) => {
+  const [isInIframe, setIsInIframe] = useState(false);
+
+  useEffect(() => {
+    // Check if the page is loaded in an iframe
+    const checkIfInIframe = () => {
+      try {
+        return window !== window.top;
+      } catch (e) {
+        return true;
+      }
+    };
+    
+    setIsInIframe(checkIfInIframe());
+  }, []);
   return (
     <>
       <style>
@@ -118,28 +132,30 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
       </div>
       
                  {/* Authgear branding */}
-           <div 
-             className="authgear-branding"
-             style={{
-               display: "flex",
-               alignItems: "center",
-               gap: "8px",
-               padding: "0 16px",
-               fontSize: "12px",
-               color: "#6c757d",
-               fontWeight: 500
-             }}
-           >
-        <span>Presented by</span>
-        <img 
-          src="./authgear-logo.svg" 
-          alt="Authgear" 
-          style={{
-            height: "20px",
-            width: "auto"
-          }}
-        />
-      </div>
+           {!isInIframe && (
+             <div 
+               className="authgear-branding"
+               style={{
+                 display: "flex",
+                 alignItems: "center",
+                 gap: "8px",
+                 padding: "0 16px",
+                 fontSize: "12px",
+                 color: "#6c757d",
+                 fontWeight: 500
+               }}
+             >
+               <span>Presented by</span>
+               <img 
+                 src="./authgear-logo.svg" 
+                 alt="Authgear" 
+                 style={{
+                   height: "20px",
+                   width: "auto"
+                 }}
+               />
+             </div>
+           )}
     </div>
     </>
   );
