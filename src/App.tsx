@@ -6,8 +6,9 @@ const App: React.FC = () => {
     <div style={{ 
       fontFamily: 'Inter, sans-serif', 
       minHeight: '100vh', 
-      background: '#f7f7f7',
-      padding: '20px',
+      background: '#fff',
+      margin: 0,
+      padding: 0,
       color: '#495057'
     }}>
       <JWKWidget />

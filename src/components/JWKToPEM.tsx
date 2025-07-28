@@ -98,9 +98,9 @@ const JWKToPEM: React.FC = () => {
   };
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "#495057" }}>
+    <div style={{ fontFamily: "Inter, sans-serif", color: "#495057", padding: "16px" }}>
       {/* JWK Input Section */}
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 16 }}>
         <label style={commonLabelStyle}>JWK (JSON Web Key)</label>
         <textarea
           value={jwkInput}

@@ -401,7 +401,7 @@ const KeyUseSelector: React.FC<{
   value: string;
   onChange: (value: string) => void;
 }> = ({ value, onChange }) => (
-  <div style={{ marginBottom: 20 }}>
+  <div style={{ marginBottom: 16 }}>
     <label style={styles.label}>Key Use</label>
     <div style={{ 
       display: "flex", 
@@ -493,7 +493,7 @@ const KeyTypeSelector: React.FC<{
   };
 
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: 16 }}>
       <label style={styles.label}>Key Type</label>
       <select
         value={value}
@@ -545,7 +545,7 @@ const KeyAlgorithmSelector: React.FC<{
   };
 
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: 16 }}>
       <label style={styles.label}>Key Algorithm</label>
       <select
         value={value}
@@ -573,7 +573,7 @@ const KeySizeSelector: React.FC<{
   };
 
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: 16 }}>
       <label style={styles.label}>Key Size (bits)</label>
       <select
         value={value}
@@ -593,7 +593,7 @@ const CurveSelector: React.FC<{
   value: string;
   onChange: (value: string) => void;
 }> = ({ value, onChange }) => (
-  <div style={{ marginBottom: 20 }}>
+  <div style={{ marginBottom: 16 }}>
     <label style={styles.label}>Curve</label>
     <select
       value={value}
@@ -611,7 +611,7 @@ const KeyIdSelector: React.FC<{
   value: string;
   onChange: (value: string) => void;
 }> = ({ value, onChange }) => (
-  <div style={{ marginBottom: 20 }}>
+  <div style={{ marginBottom: 16 }}>
     <label style={styles.label}>Key ID (kid)</label>
     <input
       type="text"
@@ -647,7 +647,7 @@ const X25519Info: React.FC = () => (
 
 const RSA1_5Warning: React.FC = () => (
   <div style={{
-    marginBottom: 20,
+    marginBottom: 16,
     padding: "12px",
     backgroundColor: "#fff3cd",
     border: "1px solid #ffeaa7",
@@ -662,7 +662,7 @@ const RSA1_5Warning: React.FC = () => (
 
 const NoneAlgorithmInfo: React.FC = () => (
   <div style={{
-    marginBottom: 20,
+    marginBottom: 16,
     padding: "12px",
     backgroundColor: "#fff3cd",
     border: "1px solid #ffeaa7",
@@ -1235,7 +1235,7 @@ const GenerateNewKey: React.FC = () => {
   };
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "#495057" }}>
+    <div style={{ fontFamily: "Inter, sans-serif", color: "#495057", padding: "16px" }}>
       <KeyUseSelector value={keyUse} onChange={setKeyUse} />
       
       <KeyTypeSelector value={keyType} onChange={setKeyType} keyUse={keyUse} />

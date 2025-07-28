@@ -14,12 +14,10 @@ const JWKWidget: React.FC = () => {
       maxWidth: 1200, 
       margin: "0 auto", 
       background: "#fff", 
-      borderRadius: 8, 
-      border: "1px solid #e9ecef",
-      padding: 24 
+      padding: 0 
     }}>
       <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div style={{ marginTop: 24 }}>
+      <div style={{ marginTop: 0 }}>
         <div style={{ display: activeTab === "pem-to-jwk" ? "block" : "none" }}>
           <PEMToJWK />
         </div>

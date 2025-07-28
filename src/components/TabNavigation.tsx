@@ -13,9 +13,12 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
       display: "flex", 
       borderBottom: "1px solid #eee",
       fontFamily: 'Inter, sans-serif',
-      justifyContent: "flex-start",
-      gap: 0
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 0,
+      padding: "0 16px"
     }}>
+      <div style={{ display: "flex", gap: 0 }}>
       <button
         className={"tab-btn" + (activeTab === "pem-to-jwk" ? " active" : "")}
         style={{
@@ -23,7 +26,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
           border: "none",
           borderBottom: activeTab === "pem-to-jwk" ? "2px solid rgb(11, 99, 233)" : "2px solid transparent",
           background: "none",
-          fontWeight: 600,
+          fontWeight: 400,
           color: activeTab === "pem-to-jwk" ? "rgb(11, 99, 233)" : "#495057",
           cursor: "pointer",
           outline: "none",
@@ -43,7 +46,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
           border: "none",
           borderBottom: activeTab === "jwk-to-pem" ? "2px solid rgb(11, 99, 233)" : "2px solid transparent",
           background: "none",
-          fontWeight: 600,
+          fontWeight: 400,
           color: activeTab === "jwk-to-pem" ? "rgb(11, 99, 233)" : "#495057",
           cursor: "pointer",
           outline: "none",
@@ -63,7 +66,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
           border: "none",
           borderBottom: activeTab === "generate-new-key" ? "2px solid rgb(11, 99, 233)" : "2px solid transparent",
           background: "none",
-          fontWeight: 600,
+          fontWeight: 400,
           color: activeTab === "generate-new-key" ? "rgb(11, 99, 233)" : "#495057",
           cursor: "pointer",
           outline: "none",
@@ -76,6 +79,28 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
       >
         Generate new key
       </button>
+      </div>
+      
+      {/* Authgear branding */}
+                 <div style={{
+             display: "flex",
+             alignItems: "center",
+             gap: "8px",
+             padding: "0 16px",
+             fontSize: "12px",
+             color: "#6c757d",
+             fontWeight: 500
+           }}>
+        <span>Presented by</span>
+        <img 
+          src="./authgear-logo.svg" 
+          alt="Authgear" 
+          style={{
+            height: "20px",
+            width: "auto"
+          }}
+        />
+      </div>
     </div>
   );
 };
