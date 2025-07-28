@@ -22,7 +22,13 @@ const JWKWidget: React.FC = () => {
       overflow: "hidden"
     }}>
       <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div style={{ marginTop: 0, flex: 1, height: "calc(100% - 60px)" }}>
+      <div style={{ 
+        marginTop: "60px", 
+        flex: 1, 
+        height: "calc(100% - 60px)",
+        overflow: "auto",
+        padding: "16px"
+      }}>
         <div style={{ display: activeTab === "pem-to-jwk" ? "block" : "none", height: "100%" }}>
           <PEMToJWK />
         </div>
