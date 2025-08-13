@@ -8,7 +8,7 @@ A web-based tool for converting between PEM-formatted keys and JSON Web Keys (JW
 
 ## 🌐 Live Demo
 
-**[Try the tool online at https://www.authgear.com/tools/jwk-generator](https://www.authgear.com/tools/jwk-generator)**
+**[Try the tool online at https://www.authgear.com/tools/hmac-signature-generator-verifier](https://www.authgear.com/tools/hmac-signature-generator-verifier)**
 
 ## Features
 
