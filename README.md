@@ -6,6 +6,10 @@ A web-based tool for converting between PEM-formatted keys and JSON Web Keys (JW
 - **JWK to PEM**: Convert JWK format back to PEM encoding
 - **Generate New Key**: Create new cryptographic keys in various formats
 
+## 🌐 Live Demo
+
+**[Try the tool online at https://www.authgear.com/tools/jwk-generator](https://www.authgear.com/tools/jwk-generator)**
+
 ## Features
 
 - **PEM to JWK Conversion**: Convert PEM-encoded keys and certificates to JWK format
