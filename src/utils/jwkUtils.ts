@@ -308,7 +308,7 @@ export function validateJWK(jwk: any): { isValid: boolean; errors: string[] } {
 }
 
 // Convert JWK to PEM
-export async function jwkToPem(jwk: JsonWebKey): Promise<string> {
+export async function jwkToPem(jwk: JsonWebKey): Promise<{ pem: string; warnings: string[] }> {
   try {
     debug('Converting JWK to PEM:', jwk);
     
@@ -320,6 +320,7 @@ export async function jwkToPem(jwk: JsonWebKey): Promise<string> {
     
     let key: CryptoKey;
     let keyType: 'public' | 'private';
+    const warnings: string[] = [];
     
     // Determine if this is a public or private key
     if (jwk.kty === 'RSA') {
@@ -336,28 +337,118 @@ export async function jwkToPem(jwk: JsonWebKey): Promise<string> {
     const algorithm = getAlgorithmFromJWK(jwk);
     let keyUsages: KeyUsage[];
     
-    if (algorithm.name === 'ECDH') {
-      keyUsages = ['deriveKey', 'deriveBits'];
+    // Extract key usages from JWK's key_ops if present, otherwise use defaults
+    if (jwk.key_ops && jwk.key_ops.length > 0) {
+      // Map JWK key_ops to Web Crypto KeyUsage
+      const jwkUsages = new Set(jwk.key_ops);
+      const webCryptoUsages: KeyUsage[] = [];
+      
+      // Map JWK operations to Web Crypto usages
+      if (jwkUsages.has('sign')) webCryptoUsages.push('sign');
+      if (jwkUsages.has('verify')) webCryptoUsages.push('verify');
+      if (jwkUsages.has('encrypt')) webCryptoUsages.push('encrypt');
+      if (jwkUsages.has('decrypt')) webCryptoUsages.push('decrypt');
+      if (jwkUsages.has('wrapKey')) webCryptoUsages.push('wrapKey');
+      if (jwkUsages.has('unwrapKey')) webCryptoUsages.push('unwrapKey');
+      if (jwkUsages.has('deriveKey')) webCryptoUsages.push('deriveKey');
+      if (jwkUsages.has('deriveBits')) webCryptoUsages.push('deriveBits');
+      
+      // Validate that we have appropriate usages for the key type
+      if (keyType === 'public') {
+        if (webCryptoUsages.includes('verify')) {
+          keyUsages = ['verify'];
+        } else if (webCryptoUsages.includes('encrypt')) {
+          keyUsages = ['encrypt'];
+        } else if (webCryptoUsages.includes('wrapKey')) {
+          keyUsages = ['wrapKey'];
+        } else {
+          // Fallback to verify for public keys
+          keyUsages = ['verify'];
+          warnings.push(`JWK key_ops "${jwk.key_ops.join(', ')}" not suitable for public key, using 'verify' instead`);
+        }
+      } else {
+        if (webCryptoUsages.includes('sign')) {
+          keyUsages = ['sign'];
+        } else if (webCryptoUsages.includes('decrypt')) {
+          keyUsages = ['decrypt'];
+        } else if (webCryptoUsages.includes('unwrapKey')) {
+          keyUsages = ['unwrapKey'];
+        } else {
+          // Fallback to sign for private keys
+          keyUsages = ['sign'];
+          warnings.push(`JWK key_ops "${jwk.key_ops.join(', ')}" not suitable for private key, using 'sign' instead`);
+        }
+      }
+      
+      // Add warning if key_ops doesn't match the key type
+      if (keyType === 'public' && jwk.key_ops.includes('sign')) {
+        warnings.push(`Public key has 'sign' in key_ops, but public keys cannot sign. This field will be ignored.`);
+      } else if (keyType === 'private' && jwk.key_ops.includes('verify')) {
+        warnings.push(`Private key has 'verify' in key_ops, but private keys cannot verify. This field will be ignored.`);
+      }
     } else {
-      keyUsages = keyType === 'public' ? ['verify'] : ['sign'];
+      // Use default usages based on key type
+      if (algorithm.name === 'ECDH') {
+        keyUsages = ['deriveKey', 'deriveBits'];
+      } else {
+        keyUsages = keyType === 'public' ? ['verify'] : ['sign'];
+      }
     }
     
-    if (keyType === 'public') {
-      key = await crypto.subtle.importKey(
-        'jwk',
-        jwk,
-        algorithm,
-        true,
-        keyUsages
-      );
-    } else {
-      key = await crypto.subtle.importKey(
-        'jwk',
-        jwk,
-        algorithm,
-        true,
-        keyUsages
-      );
+    // Add warnings for other optional fields that might cause issues
+    if (jwk.alg && jwk.alg !== 'RS256' && jwk.alg !== 'ES256' && jwk.alg !== 'PS256') {
+      warnings.push(`Algorithm '${jwk.alg}' specified in JWK, but using default algorithm for conversion`);
+    }
+    
+    if (jwk.use && jwk.use !== 'sig' && jwk.use !== 'enc') {
+      warnings.push(`Key use '${jwk.use}' specified in JWK, but this field is not used in PEM conversion`);
+    }
+    
+    try {
+      if (keyType === 'public') {
+        key = await crypto.subtle.importKey(
+          'jwk',
+          jwk,
+          algorithm,
+          true,
+          keyUsages
+        );
+      } else {
+        key = await crypto.subtle.importKey(
+          'jwk',
+          jwk,
+          algorithm,
+          true,
+          keyUsages
+        );
+      }
+    } catch (importError) {
+      // If import fails due to key_ops conflict, try with default key usages
+      if (importError instanceof Error && importError.message.includes('key_ops')) {
+        warnings.push(`JWK key_ops conflict detected, retrying with default key usages`);
+        
+        // Create a modified JWK without key_ops for the fallback attempt
+        const fallbackJwk = { ...jwk };
+        delete fallbackJwk.key_ops;
+        
+        // Use default usages that are guaranteed to work
+        let fallbackUsages: KeyUsage[];
+        if (algorithm.name === 'ECDH') {
+          fallbackUsages = ['deriveKey', 'deriveBits'];
+        } else {
+          fallbackUsages = keyType === 'public' ? ['verify'] : ['sign'];
+        }
+        
+        key = await crypto.subtle.importKey(
+          'jwk',
+          fallbackJwk,
+          algorithm,
+          true,
+          fallbackUsages
+        );
+      } else {
+        throw importError;
+      }
     }
     
     // Export as PEM
@@ -372,7 +463,9 @@ export async function jwkToPem(jwk: JsonWebKey): Promise<string> {
     // Format with line breaks every 64 characters
     const formatted = base64.match(/.{1,64}/g)?.join('\n') || base64;
     
-    return `${pemHeader}\n${formatted}\n${pemFooter}`;
+    const pem = `${pemHeader}\n${formatted}\n${pemFooter}`;
+    
+    return { pem, warnings };
   } catch (error) {
     console.error('JWK to PEM conversion error:', error);
     throw new Error('Failed to convert JWK to PEM: ' + (error instanceof Error ? error.message : 'Unknown error'));

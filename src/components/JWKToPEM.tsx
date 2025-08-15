@@ -10,6 +10,7 @@ const JWKToPEM: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [highlighted, setHighlighted] = useState<string>("");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [warnings, setWarnings] = useState<string[]>([]);
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
   const preRef = useRef<HTMLPreElement>(null);
 
@@ -33,6 +34,7 @@ const JWKToPEM: React.FC = () => {
     setError("");
     setPem("");
     setValidationErrors([]);
+    setWarnings([]);
 
     try {
       // Parse JSON input
@@ -52,11 +54,13 @@ const JWKToPEM: React.FC = () => {
 
       // Convert JWK to PEM
       const result = await jwkToPem(jwk);
-      setPem(result);
+      setPem(result.pem);
+      setWarnings(result.warnings);
     } catch (err) {
       console.error("JWK to PEM error:", err);
       setError(err instanceof Error ? err.message : "An unknown error occurred");
       setPem("");
+      setWarnings([]);
     } finally {
       setIsLoading(false);
     }
@@ -160,6 +164,30 @@ const JWKToPEM: React.FC = () => {
               <li key={index}>{error}</li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {/* Warnings Display */}
+      {warnings.length > 0 && (
+        <div style={{ 
+          color: "#856404", 
+          marginTop: 16, 
+          padding: "12px",
+          background: "#fff3cd",
+          border: "1px solid #ffeaa7",
+          borderRadius: 4,
+          fontSize: 14,
+          fontFamily: "Inter, sans-serif"
+        }}>
+          <strong>⚠️ Conversion Warnings:</strong>
+          <ul style={{ margin: "8px 0 0 20px", padding: 0 }}>
+            {warnings.map((warning, index) => (
+              <li key={index}>{warning}</li>
+            ))}
+          </ul>
+          <p style={{ margin: "8px 0 0 0", fontSize: "13px", fontStyle: "italic" }}>
+            Conversion completed successfully, but some optional fields were adjusted or ignored.
+          </p>
         </div>
       )}
 
