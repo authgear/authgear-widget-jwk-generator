@@ -59,6 +59,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
         zIndex: 1000,
         display: "flex", 
         borderBottom: "1px solid #eee",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
         fontFamily: 'Inter, sans-serif',
         justifyContent: "space-between",
         alignItems: "center",
@@ -66,7 +67,8 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }
         padding: "0 16px",
         width: "100%",
         background: "white",
-        height: "60px"
+        height: "60px",
+        boxSizing: "border-box"
       }}>
       <div style={{ display: "flex", gap: 0 }}>
       <button

@@ -153,7 +153,7 @@ const PEMToJWK: React.FC = () => {
   };
 
   return (
-    <div style={{ fontFamily: "Inter, sans-serif", color: "#495057", padding: "16px", width: "100%", height: "100%", boxSizing: "border-box", overflow: "hidden" }}>
+    <div style={{ fontFamily: "Inter, sans-serif", color: "#495057", padding: "16px", width: "100%", height: "100%", boxSizing: "border-box", overflow: "auto" }}>
       {/* PEM Input Section */}
       <div style={{ marginBottom: 16 }}>
         <label style={commonLabelStyle}>PEM encoded key or certificate</label>
